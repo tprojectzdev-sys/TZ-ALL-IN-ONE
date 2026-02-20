@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TZ PRO Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="app.css">
+</head>
+<body class="grain">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+
+    <div class="app">
+        <aside class="sidebar glass">
+            <div class="brand">
+                <div class="brand-logo">
+                    <i class="fa-solid fa-bolt"></i>
+                </div>
+                <div>
+                    <h1>TZ PRO</h1>
+                    <p>BOT DASHBOARD</p>
+                </div>
+            </div>
+
+            <nav class="nav">
+                <button class="nav-btn active" data-section="overview">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span>Overview</span>
+                </button>
+                <button class="nav-btn" data-section="fivem">
+                    <i class="fa-solid fa-gamepad"></i>
+                    <span>FiveM Server</span>
+                </button>
+                <button class="nav-btn" data-section="modules">
+                    <i class="fa-solid fa-layer-group"></i>
+                    <span>Modules</span>
+                </button>
+                <button class="nav-btn" data-section="activity">
+                    <i class="fa-solid fa-wave-square"></i>
+                    <span>Activity</span>
+                </button>
+                <button class="nav-btn" data-section="leaderboard">
+                    <i class="fa-solid fa-trophy"></i>
+                    <span>Leaderboard</span>
+                </button>
+                <button class="nav-btn" data-section="terminal">
+                    <i class="fa-solid fa-terminal"></i>
+                    <span>Console</span>
+                </button>
+                <button class="nav-btn" data-section="music">
+                    <i class="fa-solid fa-music"></i>
+                    <span>Music</span>
+                </button>
+                <button class="nav-btn" data-section="features">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    <span>Features</span>
+                </button>
+                <button class="nav-btn" data-section="config">
+                    <i class="fa-solid fa-palette"></i>
+                    <span>Config</span>
+                </button>
+                <button class="nav-btn" data-section="settings">
+                    <i class="fa-solid fa-gear"></i>
+                    <span>Settings</span>
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="status-pill" id="sidebarStatus">Offline</div>
+                <div class="sidebar-meta">Last update <span id="sidebarUpdated">--</span></div>
+            </div>
+        </aside>
+
+        <main class="content">
+            <section id="overview" class="section active">
+                <div class="page-header">
+                    <div>
+                        <h2 class="page-title">Overview</h2>
+                        <p class="page-subtitle">Live operational snapshot of the bot.</p>
+                    </div>
+                    <button class="btn" id="refreshOverview">
+                        <i class="fa-solid fa-rotate"></i>
+                        Refresh
+                    </button>
+                </div>
+
+                <div class="alert-grid">
+                    <div class="alert-card glass" id="alertBot">
+                        <div class="alert-icon"><i class="fa-solid fa-heart-pulse"></i></div>
+                        <div>
+                            <div class="alert-title" id="alertBotTitle">Bot Status</div>
+                            <div class="alert-desc" id="alertBotDesc">Checking...</div>
+                        </div>
+                    </div>
+                    <div class="alert-card glass" id="alertLatency">
+                        <div class="alert-icon"><i class="fa-solid fa-gauge"></i></div>
+                        <div>
+                            <div class="alert-title" id="alertLatencyTitle">Latency</div>
+                            <div class="alert-desc" id="alertLatencyDesc">Checking...</div>
+                        </div>
+                    </div>
+                    <div class="alert-card glass" id="alertRaid">
+                        <div class="alert-icon"><i class="fa-solid fa-shield"></i></div>
+                        <div>
+                            <div class="alert-title" id="alertRaidTitle">Raid Watch</div>
+                            <div class="alert-desc" id="alertRaidDesc">Monitoring activity...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card glass">
+                        <div class="stat-label">Servers</div>
+                        <div class="stat-value" id="statServers">--</div>
+                        <div class="stat-meta" id="statServersMeta">Active guilds</div>
+                    </div>
+                    <div class="stat-card glass">
+                        <div class="stat-label">Online Users</div>
+                        <div class="stat-value" id="statUsers">--</div>
+                        <div class="stat-meta">Non-bot presence</div>
+                    </div>
+                    <div class="stat-card glass">
+                        <div class="stat-label">Latency</div>
+                        <div class="stat-value" id="statLatency">--</div>
+                        <div class="stat-meta">WebSocket ping</div>
+                    </div>
+                    <div class="stat-card glass">
+                        <div class="stat-label">Commands</div>
+                        <div class="stat-value" id="statCommands">--</div>
+                        <div class="stat-meta">Last 24 hours</div>
+                    </div>
+                    <div class="stat-card glass">
+                        <div class="stat-label">Tickets</div>
+                        <div class="stat-value" id="statTickets">--</div>
+                        <div class="stat-meta">Open requests</div>
+                    </div>
+                    <div class="stat-card glass">
+                        <div class="stat-label">Uptime</div>
+                        <div class="stat-value" id="statUptime">--</div>
+                        <div class="stat-meta">Bot runtime</div>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="card glass">
+                        <div class="card-header">
+                            <div class="card-title">Activity Pulse</div>
+                            <span class="card-meta" id="statsChartMeta">Real time</span>
+                        </div>
+                        <div class="chart-wrap">
+                            <canvas id="statsChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="card glass">
+                        <div class="card-header">
+                            <div class="card-title">Recent Activity</div>
+                            <span class="card-meta" id="recentActivityMeta">Last 15</span>
+                        </div>
+                        <div class="activity-list" id="recentActivity"></div>
+                        <div class="empty-state" id="recentActivityEmpty">No activity yet.</div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="fivem" class="section">
+                <div class="page-header">
+                    <div>
+                        <h2 class="page-title">FiveM Server</h2>
+                        <p class="page-subtitle">Live server status and whitelist management.</p>
+                    </div>
+                    <button class="btn" id="refreshFivem">
+                        <i class="fa-solid fa-rotate"></i>
+                        Refresh
+                    </button>
+                </div>
+
+                <div class="fivem-hero glass" id="fivemHero">
+                    <div class="fivem-status">
+                        <div class="fivem-indicator" id="fivemIndicator"></div>
+                        <div>
+                            <div class="fivem-server-name" id="fivemServerName">Loading...</div>
+                            <div class="fivem-server-status" id="fivemServerStatus">Checking status...</div>
+                        </div>
+                    </div>
+                    <div class="fivem-players">
+                        <div class="fivem-player-count">
+                            <span id="fivemPlayers">--</span>
+                            <span class="fivem-player-max">/ <span id="fivemMaxPlayers">--</span></span>
+                        </div>
+                        <div class="fivem-player-label">Players Online</div>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="card glass">
+                        <div class="card-header">
+                            <div class="card-title">Server Info</div>
+                            <span class="card-meta">Live data</span>
+                        </div>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <i class="fa-solid fa-server"></i>
+                                <div>
+                                    <div class="info-label">Game Mode</div>
+                                    <div class="info-value" id="fivemGamemode">--</div>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <i class="fa-solid fa-code-branch"></i>
+                                <div>
+                                    <div class="info-label">Version</div>
+                                    <div class="info-value" id="fivemVersion">--</div>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <i class="fa-solid fa-puzzle-piece"></i>
+                                <div>
+                                    <div class="info-label">Resources</div>
+                                    <div class="info-value" id="fivemResources">--</div>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <i class="fa-solid fa-clock"></i>
+                                <div>
+                                    <div class="info-label">Last Check</div>
+                                    <div class="info-value" id="fivemLastCheck">--</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card glass">
+                        <div class="card-header">
+                            <div class="card-title">Whitelist Queue</div>
+                            <span class="card-meta" id="whitelistMeta">Pending applications</span>
+                        </div>
+                        <div class="whitelist-stats">
+                            <div class="whitelist-stat">
+                                <div class="whitelist-stat-value" id="whitelistPending">--</div>
+                                <div class="whitelist-stat-label">Pending</div>
+                            </div>
+                            <div class="whitelist-stat">
+                                <div class="whitelist-stat-value" id="whitelistApproved">--</div>
+                                <div class="whitelist-stat-label">Approved Today</div>
+                            </div>
+                            <div class="whitelist-stat">
+                                <div class="whitelist-stat-value" id="whitelistDenied">--</div>
+                                <div class="whitelist-stat-label">Denied Today</div>
+                            </div>
+                        </div>
+                        <div class="whitelist-hint">
+                            <i class="fa-solid fa-info-circle"></i>
+                            Manage whitelist applications in Discord using <code>!whitelist</code> commands.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card glass">
+                    <div class="card-header">
+                        <div class="card-title">Player Activity</div>
+                        <span class="card-meta">Last 24 hours</span>
+                    </div>
+                    <div class="chart-wrap">
+                        <canvas id="fivemChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <section id="modules" class="section">
+                <div class="page-header">
+                    <div>
+                        <h2 class="page-title">Modules</h2>
+                        <p class="page-subtitle">Toggle bot features with instant sync.</p>
+                    </div>
+                    <button class="btn" id="refreshModules">
+                        <i class="fa-solid fa-rotate"></i>
+                        Refresh
+                    </button>
+                </div>
+                <div class="modules-grid" id="modulesList"></div>
+                <div class="empty-state" id="modulesEmpty">No modules detected.</div>
+            </section>
+
+            <section id="activity" class="section">
+                <div class="page-header">
+                    <div>
+                        <h2 class="page-title">Activity</h2>
+                        <p class="page-subtitle">Filterable activity stream with context.</p>
+                    </div>
+                    <button class="btn" id="refreshActivity">
+                        <i class="fa-solid fa-rotate"></i>
+                        Refresh
+                    </button>
+                </div>
+
+                <div class="chip-row" id="activityFilters"></div>
+                <div class="card glass">
+                    <div class="activity-list" id="activityList"></div>
+                    <div class="empty-state" id="activityEmpty">No activity to display.</div>
+                </div>
+            </section>
+
+            <section id="leaderboard" class="section">
+                <div class="page-header">
+                    <div>
+                        <h2 class="page-title">Leaderboard</h2>
+                        <p class="page-subtitle">Top performers and full rankings.</p>
+                    </div>
+                    <button class="btn" id="refreshLeaderboard">
+                        <i class="fa-solid fa-rotate"></i>
+                        Refresh
+                    </button>
+                </div>
+
+                <div class="podium glass" id="podium"></div>
+
+                <div class="grid-2">
+                    <div class="card glass">
+                        <div class="card-header">
+                            <div class="card-title">XP Rankings</div>
+                            <span class="card-meta">Top 20</span>
+                        </div>
+                        <div class="table-wrap">
+                            <table class="rank-table">
+                                <thead>
+                                    <tr>
+                                        <th>Rank</th>
+                                        <th>User</th>
+                                        <th>Level</th>
+                                        <th>XP</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="leaderboardTable"></tbody>
+                            </table>
+                        </div>
+                        <div class="empty-state" id="leaderboardEmpty">No leaderboard data.</div>
+                    </div>
+
+                    <div class="card glass">
+                        <div class="card-header">
+                            <div class="card-title"><i class="fa-solid fa-coins"></i> Top Earners</div>
+                            <span class="card-meta">Economy</span>
+                        </div>
+                        <div class="table-wrap">
+                            <table class="rank-table earners-table">
+                                <thead>
+                                    <tr>
+                                        <th>Rank</th>
+                                        <th>User</th>
+                                        <th>Balance</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="earnersTable"></tbody>
+                            </table>
+                        </div>
+                        <div class="empty-state" id="earnersEmpty">No earners data.</div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="settings" class="section">
+                <div class="page-header">
+                    <div>
+                        <h2 class="page-title">Settings</h2>
+                        <p class="page-subtitle">Control bot lifecycle and dashboard access.</p>
+                    </div>
+                </div>
+
+                <div class="settings-grid">
+                    <div class="card glass">
+                        <div class="card-header">
+                            <div class="card-title">Bot Controls</div>
+                            <span class="card-meta">Requires API key if enabled</span>
+                        </div>
+                        <div class="button-grid">
+                            <button class="btn" data-action="restart"><i class="fa-solid fa-arrows-rotate"></i> Restart</button>
+                            <button class="btn secondary" data-action="pause"><i class="fa-solid fa-pause"></i> Pause</button>
+                            <button class="btn secondary" data-action="resume"><i class="fa-solid fa-play"></i> Resume</button>
+                            <button class="btn danger" data-action="shutdown"><i class="fa-solid fa-power-off"></i> Shutdown</button>
+                        </div>
+                        <div class="form-row">
+                            <label for="apiKey">Dashboard API Key</label>
+                            <input id="apiKey" type="password" placeholder="Optional key for secure actions">
+                            <button class="btn secondary" id="saveApiKey">Save Key</button>
+                        </div>
+                        <div class="form-row">
+                            <label>Notifications</label>
+                            <div class="notify-row">
+                                <label class="switch">
+                                    <input id="notifyToggle" type="checkbox">
+                                    <span class="slider"></span>
+                                </label>
+                                <span class="notify-label">Enable toast sound</span>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <label for="soundUrl">Notification Sound URL</label>
+                            <input id="soundUrl" type="text" placeholder="Leave empty for default beep">
+                            <div class="sound-actions">
+                                <button class="btn secondary" id="saveSound">Save Sound</button>
+                                <button class="btn secondary" id="testSound">Test Sound</button>
+                            </div>
+                        </div>
+                        <div class="form-hint" id="settingsNotice"></div>
+                    </div>
+
+                    <div class="card glass">
+                        <div class="card-header">
+                            <div class="card-title">Live Health</div>
+                            <span class="card-meta" id="healthStatus">Unknown</span>
+                        </div>
+                        <div class="health-grid">
+                            <div>
+                                <div class="stat-label">Bot Status</div>
+                                <div class="stat-value" id="healthBot">--</div>
+                            </div>
+                            <div>
+                                <div class="stat-label">Latency</div>
+                                <div class="stat-value" id="healthLatency">--</div>
+                            </div>
+                            <div>
+                                <div class="stat-label">Uptime</div>
+                                <div class="stat-value" id="healthUptime">--</div>
+                            </div>
+                        </div>
+                        <div class="form-hint">Updates automatically every few seconds.</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TERMINAL SECTION -->
+            <section id="terminal" class="section">
+                <div class="page-header">
+                    <div>
+                        <h2 class="page-title">Live Console</h2>
+                        <p class="page-subtitle">Direct interface with the bot instance.</p>
+                    </div>
+                    <button class="btn info" onclick="document.getElementById('terminalOutput').innerHTML = '<div class=\'msg system\'>Console cleared.</div>'">
+                        <i class="fa-solid fa-eraser"></i> Clear
+                    </button>
+                </div>
+                <div class="terminal-window glass">
+                    <div class="terminal-header">
+                        <div class="dot red"></div>
+                        <div class="dot yellow"></div>
+                        <div class="dot green"></div>
+                        <span>bot@root:~</span>
+                    </div>
+                    <div class="terminal-output" id="terminalOutput">
+                        <div class="msg system">[SYSTEM] Terminal session started...</div>
+                        <div class="msg system">[SYSTEM] Connected to local instance.</div>
+                        <div class="msg info">Type "help" for a list of commands.</div>
+                    </div>
+                    <div class="terminal-input-line">
+                        <span class="prompt">$</span>
+                        <input type="text" id="terminalInput" placeholder="..." autocomplete="off">
+                    </div>
+                </div>
+            </section>
+
+            <!-- MUSIC SECTION -->
+            <section id="music" class="section">
+                <div class="page-header">
+                    <div>
+                        <h2 class="page-title">Music Controller</h2>
+                        <p class="page-subtitle">Manage audio playback and queues.</p>
+                    </div>
+                </div>
+                
+                <div class="music-layout">
+                    <!-- Now Playing -->
+                    <div class="music-player-card glass">
+                        <div class="album-art-wrap">
+                            <div class="album-art" id="albumArt">
+                                <i class="fa-solid fa-music"></i>
+                            </div>
+                            <div class="visualizer-overlay" id="visualizer">
+                                <div class="v-bar"></div><div class="v-bar"></div><div class="v-bar"></div>
+                                <div class="v-bar"></div><div class="v-bar"></div><div class="v-bar"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="track-details">
+                            <h3 id="trackTitle">Not Playing</h3>
+                            <p id="trackArtist">Queue is empty</p>
+                        </div>
+
+                        <div class="track-progress">
+                            <span class="time current" id="currentTime">0:00</span>
+                            <div class="progress-bar-bg" id="progressBar">
+                                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                            </div>
+                            <span class="time total" id="totalTime">0:00</span>
+                        </div>
+
+                        <div class="player-controls">
+                            <button class="ctrl-btn sm"><i class="fa-solid fa-shuffle"></i></button>
+                            <button class="ctrl-btn"><i class="fa-solid fa-backward-step"></i></button>
+                            <button class="ctrl-btn main" id="playPauseBtn"><i class="fa-solid fa-play"></i></button>
+                            <button class="ctrl-btn"><i class="fa-solid fa-forward-step"></i></button>
+                            <button class="ctrl-btn sm"><i class="fa-solid fa-repeat"></i></button>
+                        </div>
+                    </div>
+
+                    <!-- Queue -->
+                    <div class="queue-card glass">
+                        <div class="queue-header">
+                            <h3>Up Next</h3>
+                            <span class="badge">0 Tracks</span>
+                        </div>
+                        <div class="queue-list" id="queueList">
+                            <div class="queue-empty">
+                                <i class="fa-solid fa-record-vinyl"></i>
+                                <p>No tracks in queue</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- FEATURES SECTION -->
+            <section id="features" class="section">
+                <div class="page-header">
+                    <div>
+                        <h2 class="page-title">Features</h2>
+                        <p class="page-subtitle">User lookup, announcements, and audit tracking.</p>
+                    </div>
+                </div>
+
+                <div class="features-grid">
+                    <!-- User Lookup -->
+                    <div class="card glass feature-card">
+                        <div class="card-header">
+                            <div class="card-title"><i class="fa-solid fa-user-magnifying-glass"></i> User Lookup</div>
+                            <span class="card-meta">Search Discord Users</span>
+                        </div>
+                        <div class="form-row">
+                            <label>Discord User ID</label>
+                            <div class="input-group">
+                                <input type="text" id="userLookupInput" placeholder="Enter user ID (e.g. 123456789012345678)" class="input">
+                                <button class="btn primary" id="userLookupBtn"><i class="fa-solid fa-search"></i> Search</button>
+                            </div>
+                        </div>
+                        <div class="user-lookup-result" id="userLookupResult">
+                            <div class="lookup-empty">
+                                <i class="fa-solid fa-user-slash"></i>
+                                <p>Search for a user to see their stats</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Announcement Panel -->
+                    <div class="card glass feature-card">
+                        <div class="card-header">
+                            <div class="card-title"><i class="fa-solid fa-bullhorn"></i> Announcement Panel</div>
+                            <span class="card-meta">Send to Channels</span>
+                        </div>
+                        <div class="form-row">
+                            <label>Channel ID</label>
+                            <input type="text" id="announcementChannel" placeholder="Enter channel ID" class="input">
+                        </div>
+                        <div class="form-row">
+                            <label>Message</label>
+                            <textarea id="announcementMessage" placeholder="Type your announcement message..." class="textarea" rows="4"></textarea>
+                        </div>
+                        <div class="form-row">
+                            <label>Options</label>
+                            <div class="checkbox-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="announcementEmbed"> Send as Embed
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="announcementMention"> @everyone
+                                </label>
+                            </div>
+                        </div>
+                        <button class="btn primary" id="sendAnnouncementBtn"><i class="fa-solid fa-paper-plane"></i> Send Announcement</button>
+                        <div class="form-hint" id="announcementStatus"></div>
+                    </div>
+
+                    <!-- Audit Log -->
+                    <div class="card glass feature-card audit-card">
+                        <div class="card-header">
+                            <div class="card-title"><i class="fa-solid fa-clipboard-list"></i> Dashboard Audit Log</div>
+                            <span class="card-meta">Track Actions</span>
+                            <button class="btn icon sm" id="refreshAuditLog"><i class="fa-solid fa-rotate"></i></button>
+                        </div>
+                        <div class="audit-filters">
+                            <button class="chip active" data-audit-filter="all">All</button>
+                            <button class="chip" data-audit-filter="USER_LOOKUP">Lookups</button>
+                            <button class="chip" data-audit-filter="ANNOUNCEMENT">Announcements</button>
+                            <button class="chip" data-audit-filter="MODULE_TOGGLE">Modules</button>
+                            <button class="chip" data-audit-filter="BOT_CONTROL">Controls</button>
+                        </div>
+                        <div class="audit-list" id="auditLogList">
+                            <div class="audit-empty" id="auditEmpty">
+                                <i class="fa-solid fa-scroll"></i>
+                                <p>No audit logs yet</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CONFIG SECTION -->
+            <section id="config" class="section">
+                <div class="page-header">
+                    <div>
+                        <h2 class="page-title">Configuration</h2>
+                        <p class="page-subtitle">Personalize your dashboard experience.</p>
+                    </div>
+                </div>
+
+                <div class="settings-grid">
+                    <div class="card glass">
+                        <div class="card-header">
+                            <div class="card-title">Theme</div>
+                            <span class="card-meta">Visual Style</span>
+                        </div>
+                        <div class="form-row">
+                            <label>Color Scheme</label>
+                            <div class="theme-picker" id="themePicker">
+                                <button class="theme-btn" data-theme="cyan">Cyan</button>
+                                <button class="theme-btn" data-theme="ember">Ember</button>
+                                <button class="theme-btn" data-theme="lime">Lime</button>
+                            </div>
+                        </div>
+                        <div class="form-hint">Theme changes apply instantly.</div>
+                    </div>
+
+                    <div class="card glass">
+                        <div class="card-header">
+                            <div class="card-title">Music Library</div>
+                            <span class="card-meta">Local Audio</span>
+                        </div>
+                        <div class="form-row">
+                            <label>Select Audio File</label>
+                            <input type="file" id="musicFileInput" accept="audio/*" class="file-input">
+                        </div>
+                        <div class="form-row">
+                            <div class="loaded-track" id="loadedTrackInfo">
+                                <i class="fa-solid fa-compact-disc"></i>
+                                <span>No file selected</span>
+                            </div>
+                        </div>
+                        <div class="form-hint">Supported: MP3, WAV, OGG, FLAC. File plays in the Music tab.</div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>

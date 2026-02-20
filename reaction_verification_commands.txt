@@ -1,0 +1,233 @@
+﻿// ==================== REACTION ROLE COMMANDS ====================
+// !reactionrole add <messageID> <emoji> <@role>
+// !reactionrole remove <messageID> <emoji>
+// !reactionrole list
+
+if (message.content.startsWith('!reactionrole')) {
+  if (!message.member.permissions.has('ManageRoles')) {
+    return message.reply(' You need **Manage Roles** permission to use this command!');
+  }
+
+  const args = message.content.split(' ').slice(1);
+  const subCommand = args[0]?.toLowerCase();
+
+  if (subCommand === 'add') {
+    // !reactionrole add <messageID> <emoji> <@role>
+    const [_, messageId, emoji, roleArg] = args;
+    
+    if (!messageId || !emoji || !roleArg) {
+      return message.reply(' Usage: `!reactionrole add <messageID> <emoji> <@role>`');
+    }
+
+    const roleMatch = roleArg.match(/^<@&(\d+)>$|^(\d+)$/);
+    if (!roleMatch) {
+      return message.reply(' Invalid role! Mention a role or provide role ID.');
+    }
+    
+    const roleId = roleMatch[1] || roleMatch[2];
+    const role = message.guild.roles.cache.get(roleId);
+    
+    if (!role) {
+      return message.reply(' Role not found!');
+    }
+
+    // Find the message
+    let targetMessage = null;
+    for (const [channelId, channel] of message.guild.channels.cache) {
+      if (channel.isTextBased()) {
+        try {
+          targetMessage = await channel.messages.fetch(messageId);
+          if (targetMessage) break;
+        } catch (err) { /* message not in this channel */ }
+      }
+    }
+
+    if (!targetMessage) {
+      return message.reply(' Message not found! Make sure the message ID is correct and in this server.');
+    }
+
+    try {
+      const { ReactionRoleModel } = require('./db');
+      
+      // Save to database
+      await ReactionRoleModel.create({
+        guildId: message.guild.id,
+        channelId: targetMessage.channel.id,
+        messageId: messageId,
+        emoji: emoji,
+        roleId: roleId,
+        createdBy: message.author.id
+      });
+
+      // Add reaction to the message
+      await targetMessage.react(emoji);
+
+      return message.reply(` Reaction role added! Users who react with ${emoji} will get **${role.name}**`);
+    } catch (error) {
+      console.error('Reaction role add error:', error);
+      if (error.code === 11000) {
+        return message.reply(' That emoji is already assigned to a role on this message!');
+      }
+      return message.reply(' Failed to add reaction role. Make sure I have permission to add reactions and manage roles.');
+    }
+  }
+
+  else if (subCommand === 'remove') {
+    // !reactionrole remove <messageID> <emoji>
+    const [_, messageId, emoji] = args;
+    
+    if (!messageId || !emoji) {
+      return message.reply(' Usage: `!reactionrole remove <messageID> <emoji>`');
+    }
+
+    try {
+      const { ReactionRoleModel } = require('./db');
+      
+      const deleted = await ReactionRoleModel.findOneAndDelete({
+        guildId: message.guild.id,
+        messageId: messageId,
+        emoji: emoji
+      });
+
+      if (!deleted) {
+        return message.reply(' No reaction role found for that message and emoji!');
+      }
+
+      return message.reply(` Reaction role removed! ${emoji} will no longer assign a role.`);
+    } catch (error) {
+      console.error('Reaction role remove error:', error);
+      return message.reply(' Failed to remove reaction role.');
+    }
+  }
+
+  else if (subCommand === 'list') {
+    try {
+      const { ReactionRoleModel } = require('./db');
+      
+      const reactionRoles = await ReactionRoleModel.find({ guildId: message.guild.id });
+
+      if (reactionRoles.length === 0) {
+        return message.reply('ℹ No reaction roles configured in this server.');
+      }
+
+      const embed = {
+        color: 0x7C3AED,
+        title: ' Reaction Roles',
+        description: 'All configured reaction roles in this server:',
+        fields: reactionRoles.map(rr => {
+          const role = message.guild.roles.cache.get(rr.roleId);
+          return {
+            name: `${rr.emoji}  ${role ? role.name : 'Unknown Role'}`,
+            value: `Message ID: \`${rr.messageId}\`\nChannel: <#${rr.channelId}>`,
+            inline: false
+          };
+        }),
+        footer: { text: `Total: ${reactionRoles.length} reaction role(s)` }
+      };
+
+      return message.reply({ embeds: [embed] });
+    } catch (error) {
+      console.error('Reaction role list error:', error);
+      return message.reply(' Failed to fetch reaction roles.');
+    }
+  }
+
+  else {
+    return message.reply(' Usage: `!reactionrole <add|remove|list>` - Use `!reactionrole help` for more info.');
+  }
+}
+
+// ==================== VERIFICATION COMMANDS ====================
+// !verify-setup <#channel> <@verifiedRole> <@unverifiedRole> [emoji]
+
+if (message.content.startsWith('!verify-setup')) {
+  if (!message.member.permissions.has('Administrator')) {
+    return message.reply(' You need **Administrator** permission to set up verification!');
+  }
+
+  const args = message.content.split(' ').slice(1);
+  
+  if (args.length < 3) {
+    return message.reply(' Usage: `!verify-setup <#channel> <@verifiedRole> <@unverifiedRole> [emoji]`\nExample: `!verify-setup #verify @Verified @Unverified `');
+  }
+
+  const channelMatch = args[0].match(/^<#(\d+)>$|^(\d+)$/);
+  const verifiedRoleMatch = args[1].match(/^<@&(\d+)>$|^(\d+)$/);
+  const unverifiedRoleMatch = args[2].match(/^<@&(\d+)>$|^(\d+)$/);
+  const emoji = args[3] || '';
+
+  if (!channelMatch || !verifiedRoleMatch || !unverifiedRoleMatch) {
+    return message.reply(' Invalid format! Use: `!verify-setup #channel @verifiedRole @unverifiedRole [emoji]`');
+  }
+
+  const channelId = channelMatch[1] || channelMatch[2];
+  const verifiedRoleId = verifiedRoleMatch[1] || verifiedRoleMatch[2];
+  const unverifiedRoleId = unverifiedRoleMatch[1] || unverifiedRoleMatch[2];
+
+  const channel = message.guild.channels.cache.get(channelId);
+  const verifiedRole = message.guild.roles.cache.get(verifiedRoleId);
+  const unverifiedRole = message.guild.roles.cache.get(unverifiedRoleId);
+
+  if (!channel || !channel.isTextBased()) {
+    return message.reply(' Channel not found or not a text channel!');
+  }
+
+  if (!verifiedRole || !unverifiedRole) {
+    return message.reply(' One or both roles not found!');
+  }
+
+  try {
+    const { VerificationModel } = require('./db');
+
+    // Send verification message
+    const verifyMessage = await channel.send({
+      embeds: [{
+        color: 0x7C3AED,
+        title: ' Verification Required',
+        description: `Welcome to **${message.guild.name}**!\n\nReact with ${emoji} to verify and gain access to the server.`,
+        footer: { text: 'By verifying, you agree to follow server rules.' }
+      }]
+    });
+
+    await verifyMessage.react(emoji);
+
+    // Save to database
+    await VerificationModel.findOneAndUpdate(
+      { guildId: message.guild.id },
+      {
+        enabled: true,
+        channelId: channelId,
+        messageId: verifyMessage.id,
+        verifiedRoleId: verifiedRoleId,
+        unverifiedRoleId: unverifiedRoleId,
+        emoji: emoji
+      },
+      { upsert: true, new: true }
+    );
+
+    return message.reply(` Verification system enabled!\n\n**Verification Channel:** <#${channelId}>\n**Verified Role:** ${verifiedRole}\n**Unverified Role:** ${unverifiedRole}\n**Emoji:** ${emoji}\n\n New members will receive the unverified role and must react to verify.`);
+  } catch (error) {
+    console.error('Verification setup error:', error);
+    return message.reply(' Failed to set up verification system.');
+  }
+}
+
+if (message.content.startsWith('!verify-disable')) {
+  if (!message.member.permissions.has('Administrator')) {
+    return message.reply(' You need **Administrator** permission!');
+  }
+
+  try {
+    const { VerificationModel } = require('./db');
+    
+    await VerificationModel.findOneAndUpdate(
+      { guildId: message.guild.id },
+      { enabled: false }
+    );
+
+    return message.reply(' Verification system disabled. Existing roles will remain but new members won\'t be auto-assigned.');
+  } catch (error) {
+    console.error('Verification disable error:', error);
+    return message.reply(' Failed to disable verification.');
+  }
+}
